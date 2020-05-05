@@ -1,10 +1,6 @@
 DNMP（Docker + Nginx + MySQL + PHP7/5 + Redis）是一款全功能的**LNMP一键安装程序**。
 
-> 使用前最好提前阅读一遍[目录](#目录)，以便快速上手，遇到问题也能及时排除。交流QQ群：**572041090**。
-
-**[[ENGLISH]](README-en.md)** -
-[**[GitHub地址]**](https://github.com/yeszao/dnmp) -
-[**[Gitee地址]**](https://gitee.com/yeszao/dnmp)
+> 使用前最好提前阅读一遍[目录](#目录)，以便快速上手，遇到问题也能及时排除。
 
 DNMP项目特点：
 1. `100%`开源
@@ -155,6 +151,7 @@ docker-compose build php
 **方法1：主机中使用composer命令**
 1. 确定composer缓存的路径。比如，我的dnmp下载在`~/dnmp`目录，那composer的缓存路径就是`~/dnmp/data/composer`。
 2. 参考[bash.alias.sample](bash.alias.sample)示例文件，将对应 php composer 函数拷贝到主机的 `~/.bashrc`文件。
+    
     > 这里需要注意的是，示例文件中的`~/dnmp/data/composer`目录需是第一步确定的目录。
 3. 让文件起效：
     ```bash
@@ -186,7 +183,7 @@ docker exec -it php /bin/sh
 cd /www/localhost
 composer update
 ```
-    
+
 ## 4.管理命令
 ### 4.1 服务器启动和构建命令
 如需管理服务，请在命令后面加上服务器名称，例如：
@@ -352,6 +349,6 @@ $ redis-cli -h127.0.0.1
 
 
 ## License
-MIT
+other
 
 
