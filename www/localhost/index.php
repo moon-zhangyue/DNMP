@@ -24,7 +24,8 @@ function getMysqlVersion()
 {
     if (extension_loaded('PDO_MYSQL')) {
         try {
-            $dbh = new PDO('mysql:host=mysql;dbname=mysql', 'root', '123456');
+            //注意host地址
+            $dbh = new PDO('mysql:host=mysql5;port=3306;dbname=mysql', 'root', '123456');
             $sth = $dbh->query('SELECT VERSION() as version');
             $info = $sth->fetch();
         } catch (PDOException $e) {
@@ -88,4 +89,6 @@ function printExtensions()
     }
     echo '</ol>';
 }
+
+echo phpinfo();
 

@@ -4,7 +4,7 @@ services:
     build:
       context: ./services/nginx
       args:
-        NGINX_VERSION: ${NGINX_VERSION}
+        NGINX_VERSION: nginx:${NGINX_VERSION}
         CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
         NGINX_INSTALL_APPS: ${NGINX_INSTALL_APPS}
     container_name: nginx
@@ -24,6 +24,9 @@ services:
     restart: always
     networks:
       - default
+      # 可以把-default 改成下列配置，以固定容器IP
+      #default:
+      #  ipv4_address: 10.0.0.10
 
   php:
     build:
@@ -31,6 +34,7 @@ services:
       args:
         PHP_VERSION: php:${PHP_VERSION}-fpm-alpine
         CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+        COMPOSER_URL: ${COMPOSER_URL}
         PHP_EXTENSIONS: ${PHP_EXTENSIONS}
         TZ: "$TZ"
     container_name: php
@@ -50,9 +54,33 @@ services:
     networks:
       - default
 
+#  php80:
+#    build:
+#      context: ./services/php80
+#      args:
+#        PHP_VERSION: php:${PHP80_VERSION}-fpm-alpine
+#        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+#        COMPOSER_URL: ${COMPOSER_URL}
+#        PHP_EXTENSIONS: ${PHP80_EXTENSIONS}
+#        TZ: "$TZ"
+#    container_name: php80
+#    expose:
+#      - 9501
+#    volumes:
+#      - ${SOURCE_DIR}:/www/:rw
+#      - ${PHP80_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
+#      - ${PHP80_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
+#      - ${PHP80_LOG_DIR}:/var/log/php
+#      - ${DATA_DIR}/composer:/tmp/composer
+#    restart: always
+#    cap_add:
+#      - SYS_PTRACE
+#    networks:
+#      - default
+
 #  php56:
 #    build:
-#      context: ./services/php
+#      context: ./services/php56
 #      args:
 #        PHP_VERSION: php:${PHP56_VERSION}-fpm-alpine
 #        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
@@ -72,7 +100,7 @@ services:
 #      - SYS_PTRACE
 #    networks:
 #      - default
-
+#
 #  php54:
 #    build:
 #      context: ./services/php54
@@ -102,27 +130,32 @@ services:
     volumes:
       - ${MYSQL_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
       - ${DATA_DIR}/mysql:/var/lib/mysql/:rw
+      - ${MYSQL_LOG_DIR}:/var/log/mysql/:rw
+
     restart: always
     networks:
       - default
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ROOT_HOST: "${MYSQL_ROOT_HOST}"
       TZ: "$TZ"
 
-#  mysql5:
-#    image: mysql:${MYSQL5_VERSION}
-#    container_name: mysql5
-#    ports:
-#      - "${MYSQL5_HOST_PORT}:3306"
-#    volumes:
-#      - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
-#      - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
-#    restart: always
-#    networks:
-#      - default
-#    environment:
-#      MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
-#      TZ: "$TZ"
+  mysql5:
+    image: mysql:${MYSQL5_VERSION}
+    container_name: mysql5
+    ports:
+      - "${MYSQL5_HOST_PORT}:3306"
+    volumes:
+      - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
+      - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
+      - ${MYSQL5_LOG_DIR}:/var/log/mysql/:rw
+    restart: always
+    networks:
+      - default
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
+      MYSQL_ROOT_HOST: "${MYSQL5_ROOT_HOST}"
+      TZ: "$TZ"
 
 #  openresty:
 #    image:  openresty/openresty:${OPENRESTY_VERSION}
@@ -169,7 +202,11 @@ services:
 #      - default
 
 #  rabbitmq:
-#    image: rabbitmq:${RABBITMQ_VERSION}
+#    build:
+#      context: ./services/rabbitmq
+#      args:
+#        RABBITMQ_VERSION: ${RABBITMQ_VERSION}
+#        RABBITMQ_PLUGINS: ${RABBITMQ_PLUGINS}
 #    container_name: rabbitmq
 #    restart: always
 #    ports:
@@ -251,7 +288,9 @@ services:
 #      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 #    volumes:
 #      - ${DATA_DIR}/esdata:/usr/share/elasticsearch/data
-#      - ${ELASTICSEARCH_CONF_FILE}:/usr/share/elasticsearch/elasticsearch.yml
+#      - ${ELASTICSEARCH_CONF_FILE}:/usr/share/elasticsearch/config/elasticsearch.yml
+#      - ${ELASTICSEARCH_JVM_CONF_FILE}:/usr/share/elasticsearch/config/jvm.options
+#      - ${ELASTICSEARCH_LOG4J2_CONF_FILE}:/usr/share/elasticsearch/config/log4j2.properties
 #    hostname: elasticsearch
 #    restart: always
 #    ports:
@@ -264,6 +303,7 @@ services:
 #    environment:
 #      TZ: "$TZ"
 #      elasticsearch.hosts: http://elasticsearch:9200
+#      I18N_LOCALE: "${KIBANA_I18N_LOCALE}"
 #    hostname: kibana
 #    depends_on:
 #      - elasticsearch
@@ -284,6 +324,51 @@ services:
 #      - "${LOGSTASH_HOST_PORT_C}:9600"
 #      - "${LOGSTASH_HOST_PORT_S}:5044"
 
+#  node:
+#    image: node:${NODE_VERSION}
+#    environment:
+#      - NODE_ENV=production
+#    volumes:
+#      - ${SOURCE_DIR}:/www/:rw
+#    expose:
+#      - "8081"
+#    networks:
+#      - default
+#    stdin_open: true
+#    tty: true
+
+
+#  supervisor:
+#    build:
+#      context: ./services/supervisor
+#      args:
+#        ALPINE_VERSION: alpine:${ALPINE_VERSION}
+#        TZ: "$TZ"
+#        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+#    container_name: supervisor
+#    ports:
+#      - "${SUPERVISOR_HOST_PORT_C}:9001"
+#    volumes:
+#      - ${SOURCE_DIR}:/www/:rw
+#      - ${SUPERVISOR_LOG}:/var/log/supervisor/:rw
+#      - ${SUPERVISOR_CONFIG}:/etc/supervisor/conf.d/:rw
+#      - ${SUPERVISOR_CONF_FILE}:/etc/supervisor/supervisord.conf:ro
+#    command:
+#      - /bin/sh
+#      - -c
+#      - |
+#        supervisord -n -c /etc/supervisor/supervisord.conf
+#    restart: always
+#    cap_add:
+#      - SYS_PTRACE
+#    networks:
+#      - default
 
 networks:
   default:
+    driver: bridge
+    ipam:
+      driver: default
+      # 解除下面的注释可以设置网段，用于nginx等容器固定容器IP
+      #config:
+      #  - subnet: 10.0.0.0/24

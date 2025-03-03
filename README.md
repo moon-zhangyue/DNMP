@@ -1,25 +1,37 @@
-DNMP（Docker + Nginx + MySQL + PHP7/5 + Redis）是一款全功能的**LNMP一键安装程序**。
+DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSearch + MongoDB + RabbitMQ + Kafka + Zookeeper）是一款在yeszao-dnmp基础上修改添加的全功能的**LNMP一键安装程序，支持Arm CPU**。
 
-> 使用前最好提前阅读一遍[目录](#目录)，以便快速上手，遇到问题也能及时排除。
 
-DNMP项目特点：
+
+<details>
+<summary>项目地址</summary>
+
+- [GitHub 地址](https://github.com/moon-zhangyue/DNMP)
+</details>
+
+<details>
+<summary>DNMP项目特点</summary>
+
 1. `100%`开源
 2. `100%`遵循Docker标准
-3. 支持**多版本PHP**共存，可任意切换（PHP5.4、PHP5.6、PHP7.1、PHP7.2、PHP7.3)
+3. 支持**多版本PHP**共存，可任意切换(PHP5.4、PHP5.6、PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)
 4. 支持绑定**任意多个域名**
 5. 支持**HTTPS和HTTP/2**
 6. **PHP源代码、MySQL数据、配置文件、日志文件**都可在Host中直接修改查看
 7. 内置**完整PHP扩展安装**命令
 8. 默认支持`pdo_mysql`、`mysqli`、`mbstring`、`gd`、`curl`、`opcache`等常用热门扩展，根据环境灵活配置
 9. 可一键选配常用服务：
-    - 多PHP版本：PHP5.4、PHP5.6、PHP7.1-7.3
+    - 多PHP版本：PHP5.4、PHP5.6、PHP7.0-7.4、PHP8.0、PHP8.2
     - Web服务：Nginx、Openresty
     - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch
-    - 消息队列：RabbitMQ
-    - 辅助工具：Kibana、Logstash、phpMyAdmin、phpRedisAdmin、AdminMongo
+    - 消息队列：RabbitMQ、Kafka
+    - 辅助工具：Kibana、Logstash、phpMyAdmin、phpRedisAdmin、AdminMongo、Zookeeper
 10. 实际项目中应用，确保`100%`可用
 11. 所有镜像源于[Docker官方仓库](https://hub.docker.com)，安全可靠
-11. 一次配置，**Windows、Linux、MacOs**皆可用
+12. 一次配置，**Windows、Linux、MacOs**皆可用
+13. 支持快速安装扩展命令 `install-php-extensions apcu`
+14. 支持安装certbot获取免费https用的SSL证书
+
+</details>
 
 # 目录
 - [1.目录结构](#1目录结构)
@@ -27,8 +39,9 @@ DNMP项目特点：
 - [3.PHP和扩展](#3PHP和扩展)
     - [3.1 切换Nginx使用的PHP版本](#31-切换Nginx使用的PHP版本)
     - [3.2 安装PHP扩展](#32-安装PHP扩展)
-    - [3.3 Host中使用php命令行（php-cli）](#33-host中使用php命令行php-cli)
-    - [3.4 使用composer](#34-使用composer)
+    - [3.3 快速安装php扩展](#33-快速安装php扩展)
+    - [3.4 Host中使用php命令行（php-cli）](#34-host中使用php命令行php-cli)
+    - [3.5 使用composer](#35-使用composer)
 - [4.管理命令](#4管理命令)
     - [4.1 服务器启动和构建命令](#41-服务器启动和构建命令)
     - [4.2 添加快捷命令](#42-添加快捷命令)
@@ -55,15 +68,22 @@ DNMP项目特点：
 │   ├── esdata                  ElasticSearch 数据目录
 │   ├── mongo                   MongoDB 数据目录
 │   ├── mysql                   MySQL8 数据目录
-│   └── mysql5                  MySQL5 数据目录
+│   └── mysql5                  MySQL5 数据目录                      日志目录
+│   ├── zookeeper               zookeeper 数据目录
 ├── services                    服务构建文件和配置文件目录
 │   ├── elasticsearch           ElasticSearch 配置文件目录
 │   ├── mysql                   MySQL8 配置文件目录
 │   ├── mysql5                  MySQL5 配置文件目录
 │   ├── nginx                   Nginx 配置文件目录
-│   ├── php                     PHP5.6 - PHP7.3 配置目录
+│   ├── php                     PHP5.6 - PHP8.2 配置目录
 │   ├── php54                   PHP5.4 配置目录
+│   ├── php56                   PHP5.6 配置目录
+│   ├── php80                   PHP8.0 配置目录
+│   ├── php82                   PHP8.2 配置目录
 │   └── redis                   Redis 配置目录
+│   ├── openresty               openresty 配置目录
+│   ├── kafka                   kafka 配置目录
+│   └── zookeeper               zookeeper 配置目录
 ├── logs                        日志目录
 ├── docker-compose.sample.yml   Docker 服务配置示例文件
 ├── env.smaple                  环境配置示例文件
@@ -77,9 +97,9 @@ DNMP项目特点：
     - `docker-compose 1.7.0+`
 2. `clone`项目：
     ```
-    $ git clone https://github.com/yeszao/dnmp.git
+    $ git clone https://github.com/moon-zhangyue/DNMP.git
     ```
-3. 如果不是`root`用户，还需将当前用户加入`docker`用户组：
+3. 如果主机是 Linux系统，且当前用户不是`root`用户，还需将当前用户加入`docker`用户组：
     ```
     $ sudo gpasswd -a ${USER} docker
     ```
@@ -131,7 +151,176 @@ docker-compose build php
 ```
 可用的扩展请看同文件的`env.sample`注释块说明。
 
-### 3.3 Host中使用php命令行（php-cli）
+### 3.3 快速安装php扩展
+1.进入容器:
+
+```sh
+docker exec -it php /bin/sh
+
+install-php-extensions apcu 
+```
+2.支持快速安装扩展列表
+<!-- START OF EXTENSIONS TABLE -->
+<!-- ########################################################### -->
+<!-- #                                                         # -->
+<!-- #  DO NOT EDIT THIS TABLE: IT IS GENERATED AUTOMATICALLY  # -->
+<!-- #                                                         # -->
+<!-- #  EDIT THE data/supported-extensions FILE INSTEAD        # -->
+<!-- #                                                         # -->
+<!-- ########################################################### -->
+| Extension | PHP 5.5 | PHP 5.6 | PHP 7.0 | PHP 7.1 | PHP 7.2 | PHP 7.3 | PHP 7.4 | PHP 8.0 | PHP 8.1 | PHP 8.2 | PHP 8.3 |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| amqp | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| apcu | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| apcu_bc |  |  | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| ast |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| bcmath | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| bitset | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| blackfire | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| bz2 | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| calendar | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| cassandra[*](#special-requirements-for-cassandra) |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| cmark |  |  | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| csv |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; |
+| dba | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ddtrace[*](#special-requirements-for-ddtrace) |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| decimal |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ds |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ecma_intl[*](#special-requirements-for-ecma_intl) |  |  |  |  |  |  |  |  |  | &check; | &check; |
+| enchant | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ev | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| event | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| excimer |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| exif | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ffi |  |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; |
+| ftp |  |  |  |  |  |  |  |  |  | &check; | &check; |
+| gd | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| gearman | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |
+| geoip | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| geos[*](#special-requirements-for-geos) | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| geospatial | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| gettext | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| gmagick | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| gmp | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| gnupg | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| grpc | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| http | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| igbinary | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| imagick | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |
+| imap | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| inotify | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| interbase | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |  |
+| intl | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ion |  |  |  |  |  |  |  |  | &check; | &check; | &check; |
+| ioncube_loader | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  | &check; | &check; |  |
+| jsmin | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| json_post | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| jsonpath |  |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; |
+| ldap | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| luasandbox | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| lz4[*](#special-requirements-for-lz4) |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| lzf | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| mailparse | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| maxminddb |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| mcrypt | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| memcache | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| memcached | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| memprof[*](#special-requirements-for-memprof) | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| mongo | &check; | &check; |  |  |  |  |  |  |  |  |  |
+| mongodb | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| mosquitto | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| msgpack | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| mssql | &check; | &check; |  |  |  |  |  |  |  |  |  |
+| mysql | &check; | &check; |  |  |  |  |  |  |  |  |  |
+| mysqli | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| oauth | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| oci8 | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| odbc | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| opcache | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| opencensus |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| openswoole |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| opentelemetry |  |  |  |  |  |  |  | &check; | &check; | &check; | &check; |
+| parallel[*](#special-requirements-for-parallel) |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| parle[*](#special-requirements-for-parle) |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pcntl | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pcov |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_dblib | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_firebird | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_mysql | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_oci |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_odbc | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_pgsql | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pdo_sqlsrv[*](#special-requirements-for-pdo_sqlsrv) |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pgsql | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| php_trie |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; |
+| pkcs11 |  |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; |
+| pq |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| propro | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |
+| protobuf | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pspell | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| pthreads[*](#special-requirements-for-pthreads) | &check; | &check; | &check; |  |  |  |  |  |  |  |  |
+| raphf | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| rdkafka | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| recode | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |  |
+| redis | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| relay |  |  |  |  |  |  | &check; | &check; | &check; | &check; | &check; |
+| saxon[*](#special-requirements-for-saxon) |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| seasclick | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| seaslog | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| shmop | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| simdjson[*](#special-requirements-for-simdjson) |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| smbclient | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| snappy | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| snmp | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| snuffleupagus |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| soap | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sockets | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sodium[*](#special-requirements-for-sodium) |  | &check; | &check; | &check; |  |  |  |  |  |  |  |
+| solr | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sourceguardian | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |
+| spx | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sqlsrv[*](#special-requirements-for-sqlsrv) |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| ssh2 | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| stomp | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  | &check; | &check; |
+| swoole | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sybase_ct | &check; | &check; |  |  |  |  |  |  |  |  |  |
+| sync | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sysvmsg | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sysvsem | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| sysvshm | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| tensor |  |  |  |  | &check; | &check; | &check; | &check; | &check; | &check; |  |
+| tideways | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| tidy | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| timezonedb | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| uopz | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| uploadprogress | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| uuid | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| uv |  |  |  |  |  |  |  | &check; | &check; | &check; | &check; |
+| vips[*](#special-requirements-for-vips) |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| vld | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| wddx | &check; | &check; | &check; | &check; | &check; | &check; |  |  |  |  |  |
+| xdebug | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xdiff | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xhprof | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xlswriter |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xmldiff | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xmlrpc | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| xsl | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| yac |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| yaml | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| yar | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |  |
+| zephir_parser |  |  | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| zip | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| zmq | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+| zookeeper | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |  |
+| zstd | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; | &check; |
+
+*Number of supported extensions: 144*
+
+此扩展来自[https://github.com/mlocati/docker-php-extension-installer](https://github.com/mlocati/docker-php-extension-installer)
+参考示例文件
+
+### 3.4 Host中使用php命令行（php-cli）
 
 1. 参考[bash.alias.sample](bash.alias.sample)示例文件，将对应 php cli 函数拷贝到主机的 `~/.bashrc`文件。
 2. 让文件起效：
@@ -147,11 +336,10 @@ docker-compose build php
         with Zend OPcache v7.2.13, Copyright (c) 1999-2018, by Zend Technologies
         with Xdebug v2.6.1, Copyright (c) 2002-2018, by Derick Rethans
     ```
-### 3.4 使用composer
+### 3.5 使用composer
 **方法1：主机中使用composer命令**
 1. 确定composer缓存的路径。比如，我的dnmp下载在`~/dnmp`目录，那composer的缓存路径就是`~/dnmp/data/composer`。
 2. 参考[bash.alias.sample](bash.alias.sample)示例文件，将对应 php composer 函数拷贝到主机的 `~/.bashrc`文件。
-    
     > 这里需要注意的是，示例文件中的`~/dnmp/data/composer`目录需是第一步确定的目录。
 3. 让文件起效：
     ```bash
@@ -160,7 +348,7 @@ docker-compose build php
 4. 在主机的任何目录下就能用composer了：
     ```bash
     cd ~/dnmp/www/
-    composer create-project yeszao/fastphp project --no-dev
+    composer create-project fastphp project --no-dev
     ```
 5. （可选）第一次使用 composer 会在 `~/dnmp/data/composer` 目录下生成一个**config.json**文件，可以在这个文件中指定国内仓库，例如：
     ```json
@@ -169,7 +357,7 @@ docker-compose build php
         "repositories": {
             "packagist": {
                 "type": "composer",
-                "url": "https://packagist.laravel-china.org"
+                "url": "https://mirrors.aliyun.com/composer/"
             }
         }
     }
@@ -183,7 +371,7 @@ docker exec -it php /bin/sh
 cd /www/localhost
 composer update
 ```
-
+    
 ## 4.管理命令
 ### 4.1 服务器启动和构建命令
 如需管理服务，请在命令后面加上服务器名称，例如：
@@ -273,17 +461,17 @@ ini_set('display_errors', 'on');
 3. 重启PHP-FPM容器。
 
 ### 5.3 MySQL日志
-因为MySQL容器中的MySQL使用的是`mysql`用户启动，它无法自行在`/var/log`下的增加日志文件。所以，我们把MySQL的日志放在与data一样的目录，即项目的`mysql`目录下，对应容器中的`/var/lib/mysql/`目录。
+因为MySQL容器中的MySQL使用的是`mysql`用户启动，它无法自行在`/var/log`下的增加日志文件。所以，我们把MySQL的日志放在与data一样的目录，即项目的`mysql`目录下，对应容器中的`/var/log/mysql/`目录。
 ```bash
-slow-query-log-file     = /var/lib/mysql/mysql.slow.log
-log-error               = /var/lib/mysql/mysql.error.log
+slow-query-log-file     = /var/log/mysql/mysql.slow.log
+log-error               = /var/log/mysql/mysql.error.log
 ```
 以上是mysql.conf中的日志文件的配置。
 
 
 
 ## 6.数据库管理
-本项目默认在`docker-compose.yml`中开启了用于MySQL在线管理的*phpMyAdmin*，以及用于redis在线管理的*phpRedisAdmin*，可以根据需要修改或删除。
+本项目默认在`docker-compose.yml`中不开启了用于MySQL在线管理的*phpMyAdmin*，以及用于redis在线管理的*phpRedisAdmin*，可以根据需要修改或删除。
 
 ### 6.1 phpMyAdmin
 phpMyAdmin容器映射到主机的端口地址是：`8080`，所以主机上访问phpMyAdmin的地址是：
@@ -346,9 +534,34 @@ $ redis-cli -h127.0.0.1
 ```
 这里`host`参数不能用localhost是因为它默认是通过sock文件与mysql通信，而容器与主机文件系统已经隔离，所以需要通过TCP方式连接，所以需要指定IP。
 
+### 8.5 容器内的php如何连接宿主机MySQL
+1.宿主机执行`ifconfig docker0`得到`inet`就是要连接的`ip`地址
+```sh
+$ ifconfig docker0
+docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        ...
+```
+2.运行宿主机Mysql命令行
+```mysql
+ mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
+ mysql>flush privileges;
+// 其中各字符的含义：
+// *.* 对任意数据库任意表有效
+// "root" "123456" 是数据库用户名和密码
+// '%' 允许访问数据库的IP地址，%意思是任意IP，也可以指定IP
+// flush privileges 刷新权限信息
+```
 
+3.接着直接php容器使用`172.0.17.1:3306`连接即可
+
+### 8.6 SQLSTATE[HY000] [1130] Host '172.19.0.2' is not allowed to connect to this MySQL server
+1. 目前使用mysql-server `8.0.28`以上的版本,php版本需要`7.4.7`以上才能连接
+
+### 8.7 Docker是如何生成容器名
+[在不指定容器名称时,是如何生成容器名](https://pet2cattle.com/2022/08/docker-container-names-generator)
 
 ## License
-yeszao
+MIT
 
 

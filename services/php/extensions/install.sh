@@ -52,7 +52,7 @@ isPhpVersionGreaterOrEqual()
 # Install extension from package file(.tgz),
 # For example:
 #
-# installExtensionFromTgz redis-5.0.2
+# installExtensionFromTgz redis-5.2.2
 #
 # Param 1: Package name with version
 # Param 2: enable options
@@ -60,13 +60,15 @@ isPhpVersionGreaterOrEqual()
 installExtensionFromTgz()
 {
     tgzName=$1
-    extensionName="${tgzName%%-*}"
-
+    result=""
+    extensionName="${tgzName%%-*}" 
+    shift 1
+    result=$@
     mkdir ${extensionName}
     tar -xf ${tgzName}.tgz -C ${extensionName} --strip-components=1
-    ( cd ${extensionName} && phpize && ./configure && make ${MC} && make install )
+    ( cd ${extensionName} && phpize && ./configure ${result} && make ${MC} && make install )
 
-    docker-php-ext-enable ${extensionName} $2
+    docker-php-ext-enable ${extensionName}
 }
 
 
@@ -121,7 +123,9 @@ fi
 
 if [[ -z "${EXTENSIONS##*,gettext,*}" ]]; then
     echo "---------- Install gettext ----------"
-	docker-php-ext-install ${MC} gettext
+    apk --no-cache add gettext-dev
+    docker-php-ext-install ${MC} gettext
+
 fi
 
 if [[ -z "${EXTENSIONS##*,shmop,*}" ]]; then
@@ -197,6 +201,12 @@ if [[ -z "${EXTENSIONS##*,interbase,*}" ]]; then
 	#docker-php-ext-install ${MC} interbase
 fi
 
+if [[ -z "${EXTENSIONS##*,hprose,*}" ]]; then
+    echo "---------- Install hprose ----------"
+    printf "\n" | pecl install hprose
+    docker-php-ext-enable hprose
+fi
+
 if [[ -z "${EXTENSIONS##*,gd,*}" ]]; then
     echo "---------- Install gd ----------"
     isPhpVersionGreaterOrEqual 7 4
@@ -204,9 +214,9 @@ if [[ -z "${EXTENSIONS##*,gd,*}" ]]; then
     if [[ "$?" = "1" ]]; then
         # "--with-xxx-dir" was removed from php 7.4,
         # issue: https://github.com/docker-library/php/issues/912
-        options="--with-freetype --with-jpeg"
+        options="--with-freetype --with-jpeg --with-webp"
     else
-        options="--with-gd --with-freetype-dir=/usr/include/ --with-png-dir=/usr/include/ --with-jpeg-dir=/usr/include/"
+        options="--with-gd --with-freetype-dir=/usr/include/ --with-png-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-webp-dir=/usr/include/"
     fi
 
     apk add --no-cache \
@@ -216,12 +226,20 @@ if [[ -z "${EXTENSIONS##*,gd,*}" ]]; then
         libpng-dev \
         libjpeg-turbo \
         libjpeg-turbo-dev \
+	libwebp-dev \
     && docker-php-ext-configure gd ${options} \
     && docker-php-ext-install ${MC} gd \
     && apk del \
         freetype-dev \
         libpng-dev \
         libjpeg-turbo-dev
+fi
+
+if [[ -z "${EXTENSIONS##*,yaml,*}" ]]; then
+    echo "---------- Install yaml ----------"
+    apk add --no-cache yaml-dev
+    printf "\n" | pecl install yaml
+    docker-php-ext-enable yaml
 fi
 
 if [[ -z "${EXTENSIONS##*,intl,*}" ]]; then
@@ -320,6 +338,12 @@ if [[ -z "${EXTENSIONS##*,ldap,*}" ]]; then
 	docker-php-ext-install ${MC} ldap
 fi
 
+if [[ -z "${EXTENSIONS##*,psr,*}" ]]; then
+    echo "---------- Install psr ----------"
+    printf "\n" | pecl install psr
+    docker-php-ext-enable psr
+fi
+
 if [[ -z "${EXTENSIONS##*,imagick,*}" ]]; then
     echo "---------- Install imagick ----------"
 	apk add --no-cache file-dev
@@ -353,10 +377,38 @@ if [[ -z "${EXTENSIONS##*,igbinary,*}" ]]; then
 fi
 
 
+if [[ -z "${EXTENSIONS##*,ssh2,*}" ]]; then
+    isPhpVersionGreaterOrEqual 7 0
+    if [[ "$?" = "1" ]]; then
+        echo "---------- Install ssh2 ----------"
+        printf "\n" | apk add libssh2-dev
+        pecl install ssh2-1.1.2
+        docker-php-ext-enable ssh2
+    else
+        echo "ssh2 requires PHP >= 7.0.0, installed version is ${PHP_VERSION}"
+    fi
+fi
+
+if [[ -z "${EXTENSIONS##*,protobuf,*}" ]]; then
+    isPhpVersionGreaterOrEqual 7 0
+    if [[ "$?" = "1" ]]; then
+        echo "---------- Install protobuf ----------"
+        printf "\n" | pecl install protobuf
+        docker-php-ext-enable protobuf
+    else
+        echo "yar requires PHP >= 7.0.0, installed version is ${PHP_VERSION}"
+    fi
+fi
+
 if [[ -z "${EXTENSIONS##*,yac,*}" ]]; then
-    echo "---------- Install yac ----------"
-    printf "\n" | pecl install yac-2.0.2
-    docker-php-ext-enable yac
+    isPhpVersionGreaterOrEqual 7 0
+    if [[ "$?" = "1" ]]; then
+        echo "---------- Install yac ----------"
+        printf "\n" | pecl install yac-2.0.2
+        docker-php-ext-enable yac
+    else
+        echo "yar requires PHP >= 7.0.0, installed version is ${PHP_VERSION}"
+    fi
 fi
 
 if [[ -z "${EXTENSIONS##*,yar,*}" ]]; then
@@ -372,10 +424,16 @@ if [[ -z "${EXTENSIONS##*,yar,*}" ]]; then
 fi
 
 
+
 if [[ -z "${EXTENSIONS##*,yaconf,*}" ]]; then
-    echo "---------- Install yaconf ----------"
-    printf "\n" | pecl install yaconf
-    docker-php-ext-enable yaconf
+    isPhpVersionGreaterOrEqual 7 0
+    if [[ "$?" = "1" ]]; then
+        echo "---------- Install yaconf ----------"
+        printf "\n" | pecl install yaconf
+        docker-php-ext-enable yaconf
+    else
+        echo "yar requires PHP >= 7.0.0, installed version is ${PHP_VERSION}"
+    fi
 fi
 
 if [[ -z "${EXTENSIONS##*,seaslog,*}" ]]; then
@@ -398,6 +456,8 @@ if [[ -z "${EXTENSIONS##*,pdo_sqlsrv,*}" ]]; then
         apk add --no-cache unixodbc-dev
         printf "\n" | pecl install pdo_sqlsrv
         docker-php-ext-enable pdo_sqlsrv
+        curl -o /tmp/msodbcsql17_amd64.apk https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.2.1-1_amd64.apk
+        apk add --allow-untrusted /tmp/msodbcsql17_amd64.apk
     else
         echo "pdo_sqlsrv requires PHP >= 7.1.0, installed version is ${PHP_VERSION}"
     fi
@@ -416,9 +476,12 @@ if [[ -z "${EXTENSIONS##*,sqlsrv,*}" ]]; then
 fi
 
 if [[ -z "${EXTENSIONS##*,mcrypt,*}" ]]; then
-    isPhpVersionGreaterOrEqual 7 2
+    isPhpVersionGreaterOrEqual 7 0
     if [[ "$?" = "1" ]]; then
-        echo "---------- mcrypt was REMOVED from PHP 7.2.0 ----------"
+        echo "---------- Install mcrypt ----------"
+        apk add --no-cache libmcrypt-dev libmcrypt re2c
+        printf "\n" |pecl install mcrypt
+        docker-php-ext-enable mcrypt
     else
         echo "---------- Install mcrypt ----------"
         apk add --no-cache libmcrypt-dev \
@@ -453,18 +516,12 @@ fi
 if [[ -z "${EXTENSIONS##*,amqp,*}" ]]; then
     echo "---------- Install amqp ----------"
     apk add --no-cache rabbitmq-c-dev
-    installExtensionFromTgz amqp-1.9.4
+    installExtensionFromTgz amqp-1.10.2
 fi
 
 if [[ -z "${EXTENSIONS##*,redis,*}" ]]; then
     echo "---------- Install redis ----------"
-    isPhpVersionGreaterOrEqual 7 0
-    if [[ "$?" = "1" ]]; then
-        installExtensionFromTgz redis-5.0.2
-    else
-        printf "\n" | pecl install redis-4.3.0
-        docker-php-ext-enable redis
-    fi
+    installExtensionFromTgz redis-5.3.7
 fi
 
 if [[ -z "${EXTENSIONS##*,apcu,*}" ]]; then
@@ -523,12 +580,18 @@ if [[ -z "${EXTENSIONS##*,event,*}" ]]; then
     fi
 
     echo "---------- Install event again ----------"
-    installExtensionFromTgz event-2.5.3  "--ini-name event.ini"
+    mkdir event
+    tar -xf event-3.0.8.tgz -C event --strip-components=1
+    cd event && phpize && ./configure && make  && make install
+
+    docker-php-ext-enable --ini-name event.ini event
 fi
 
 if [[ -z "${EXTENSIONS##*,mongodb,*}" ]]; then
     echo "---------- Install mongodb ----------"
-    installExtensionFromTgz mongodb-1.5.5
+    apk add --no-cache openssl-dev
+    installExtensionFromTgz mongodb-1.7.4
+    docker-php-ext-configure mongodb --with-mongodb-ssl=openssl 
 fi
 
 if [[ -z "${EXTENSIONS##*,yaf,*}" ]]; then
@@ -546,10 +609,13 @@ fi
 
 if [[ -z "${EXTENSIONS##*,swoole,*}" ]]; then
     echo "---------- Install swoole ----------"
+    # Fix: Refer to the line containing "swoole@alpine)" in file "./install-php-extensions"
+    apk add --no-cache libstdc++
+
     isPhpVersionGreaterOrEqual 7 0
 
     if [[ "$?" = "1" ]]; then
-        installExtensionFromTgz swoole-4.4.2
+        installExtensionFromTgz swoole-4.8.11 --enable-openssl
     else
         installExtensionFromTgz swoole-2.0.11
     fi
@@ -575,7 +641,7 @@ if [[ -z "${EXTENSIONS##*,xhprof,*}" ]]; then
 
     if [[ "$?" = "1" ]]; then
         mkdir xhprof \
-        && tar -xf xhprof-2.1.0.tgz -C xhprof --strip-components=1 \
+        && tar -xf xhprof-2.2.0.tgz -C xhprof --strip-components=1 \
         && ( cd xhprof/extension/ && phpize && ./configure  && make ${MC} && make install ) \
         && docker-php-ext-enable xhprof
     else
@@ -593,6 +659,67 @@ if [[ -z "${EXTENSIONS##*,xlswriter,*}" ]]; then
         docker-php-ext-enable xlswriter
     else
         echo "---------- PHP Version>= 7.0----------"
+    fi
+fi
+
+if [[ -z "${EXTENSIONS##*,rdkafka,*}" ]]; then
+    echo "---------- Install rdkafka ----------"
+    isPhpVersionGreaterOrEqual 5 6
+
+    if [[ "$?" = "1" ]]; then
+        apk add librdkafka-dev
+        printf "\n" | pecl install rdkafka
+        docker-php-ext-enable rdkafka
+    else
+        echo "---------- PHP Version>= 5.6----------"
+    fi
+fi
+
+if [[ -z "${EXTENSIONS##*,zookeeper,*}" ]]; then
+    echo "---------- Install zookeeper ----------"
+    isPhpVersionGreaterOrEqual 7 0
+
+    if [[ "$?" = "1" ]]; then
+        apk add re2c
+        apk add libzookeeper-dev --repository http://${CONTAINER_PACKAGE_URL}/alpine/edge/testing/
+        printf "\n" | pecl install zookeeper
+        docker-php-ext-enable zookeeper
+    else
+        echo "---------- PHP Version>= 7.0----------"
+    fi
+fi
+
+if [[ -z "${EXTENSIONS##*,phalcon,*}" ]]; then
+    echo "---------- Install phalcon ----------"
+    isPhpVersionGreaterOrEqual 7 2
+
+    if [[ "$?" = "1" ]]; then
+        printf "\n" | pecl install phalcon
+        docker-php-ext-enable psr
+        docker-php-ext-enable phalcon
+    else
+        echo "---------- PHP Version>= 7.2----------"
+    fi
+fi
+
+if [[ -z "${EXTENSIONS##*,sdebug,*}" ]]; then
+    echo "---------- Install sdebug ----------"
+    isPhpVersionGreaterOrEqual 7 2
+
+    if [[ "$?" = "1" ]]; then
+                curl -SL "https://github.com/swoole/sdebug/archive/sdebug_2_9-beta.tar.gz" -o sdebug.tar.gz \
+             && mkdir -p sdebug \
+             && tar -xf sdebug.tar.gz -C sdebug --strip-components=1 \
+             && rm sdebug.tar.gz \
+             && ( \
+                 cd sdebug \
+                 && phpize \
+                 && ./configure  --enable-xdebug \
+                 && make clean && make && make install \
+             ) \
+             && docker-php-ext-enable xdebug
+    else
+        echo "---------- PHP Version>= 7.2----------"
     fi
 fi
 
