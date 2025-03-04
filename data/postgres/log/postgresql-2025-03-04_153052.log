@@ -1,0 +1,14 @@
+2025-03-04 15:30:52 CST [1]: [3-1] user=,db=,app=,client= LOG:  starting PostgreSQL 15.8 on x86_64-pc-linux-musl, compiled by gcc (Alpine 13.2.1_git20240309) 13.2.1 20240309, 64-bit
+2025-03-04 15:30:52 CST [1]: [4-1] user=,db=,app=,client= LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2025-03-04 15:30:52 CST [1]: [5-1] user=,db=,app=,client= LOG:  listening on IPv6 address "::", port 5432
+2025-03-04 15:30:52 CST [1]: [6-1] user=,db=,app=,client= LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2025-03-04 15:30:52 CST [60]: [1-1] user=,db=,app=,client= LOG:  database system was shut down at 2025-03-04 15:30:52 CST
+2025-03-04 15:30:52 CST [1]: [7-1] user=,db=,app=,client= LOG:  database system is ready to accept connections
+2025-03-04 15:35:52 CST [58]: [1-1] user=,db=,app=,client= LOG:  checkpoint starting: time
+2025-03-04 15:35:56 CST [58]: [2-1] user=,db=,app=,client= LOG:  checkpoint complete: wrote 35 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.239 s, sync=0.445 s, total=3.792 s; sync files=11, longest=0.071 s, average=0.041 s; distance=154 kB, estimate=154 kB
+2025-03-04 15:55:12 CST [112]: [1-1] user=[unknown],db=[unknown],app=[unknown],client=172.18.0.7 LOG:  connection received: host=172.18.0.7 port=55400
+2025-03-04 15:55:12 CST [112]: [2-1] user=postgres,db=default,app=[unknown],client=172.18.0.7 LOG:  connection authenticated: identity="postgres" method=scram-sha-256 (/var/lib/postgresql/data/pg_hba.conf:100)
+2025-03-04 15:55:12 CST [112]: [3-1] user=postgres,db=default,app=[unknown],client=172.18.0.7 LOG:  connection authorized: user=postgres database=default
+2025-03-04 15:55:13 CST [112]: [4-1] user=postgres,db=default,app=[unknown],client=172.18.0.7 LOG:  disconnection: session time: 0:00:00.383 user=postgres database=default host=172.18.0.7 port=55400
+2025-03-04 15:55:53 CST [58]: [3-1] user=,db=,app=,client= LOG:  checkpoint starting: time
+2025-03-04 15:55:58 CST [58]: [4-1] user=,db=,app=,client= LOG:  checkpoint complete: wrote 47 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.651 s, sync=0.978 s, total=5.759 s; sync files=40, longest=0.046 s, average=0.025 s; distance=149 kB, estimate=154 kB

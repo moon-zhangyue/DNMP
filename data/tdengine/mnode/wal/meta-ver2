@@ -1,0 +1,21 @@
+{
+	"meta":	{
+		"firstVer":	"0",
+		"snapshotVer":	"10",
+		"commitVer":	"10",
+		"lastVer":	"10"
+	},
+	"files":	[{
+			"firstVer":	"0",
+			"lastVer":	"10",
+			"createTs":	"1741073417",
+			"closeTs":	"1741073418",
+			"fileSize":	"10208"
+		}, {
+			"firstVer":	"11",
+			"lastVer":	"-1",
+			"createTs":	"1741073418",
+			"closeTs":	"-1",
+			"fileSize":	"0"
+		}]
+}
