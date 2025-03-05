@@ -113,7 +113,16 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
                                                         # 除服务块前的注释
     $ docker-compose up                                 # 启动
     ```
-5. 在浏览器中访问：`http://localhost`或`https://localhost`(自签名HTTPS演示)就能看到效果，PHP代码在文件`./www/localhost/index.php`。
+    如果失败可以考虑更改镜像源daemon.json
+   ```
+   "registry-mirrors": [
+        "https://dockerpull.org/",
+        "https://mirror.ccs.tencentyun.com",
+        "https://dockerhub.azk8s.cn",
+        "https://docker.mirrors.ustc.edu.cn"
+    ]
+   ```
+6. 在浏览器中访问：`http://localhost`或`https://localhost`(自签名HTTPS演示)就能看到效果，PHP代码在文件`./www/localhost/index.php`。
 
 ## 3.PHP和扩展
 ### 3.1 切换Nginx使用的PHP版本
