@@ -1,4 +1,4 @@
-DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSearch + MongoDB + RabbitMQ + Kafka + Zookeeper）是一款在yeszao-dnmp基础上修改添加的全功能的**LNMP一键安装程序，支持Arm CPU**。
+DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSearch + MongoDB + RabbitMQ + Kafka + Zookeeper + TDengine + PostgreSQL）是一款在yeszao-dnmp基础上修改添加的全功能的**LNMP一键安装程序，支持Arm CPU**。
 
 
 
@@ -22,7 +22,7 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 9. 可一键选配常用服务：
     - 多PHP版本：PHP5.4、PHP5.6、PHP7.0-7.4、PHP8.0、PHP8.2
     - Web服务：Nginx、Openresty
-    - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch
+    - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch、TDengine、PostgreSQL
     - 消息队列：RabbitMQ、Kafka
     - 辅助工具：Kibana、Logstash、phpMyAdmin、phpRedisAdmin、AdminMongo、Zookeeper
 10. 实际项目中应用，确保`100%`可用
@@ -113,7 +113,16 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
                                                         # 除服务块前的注释
     $ docker-compose up                                 # 启动
     ```
-5. 在浏览器中访问：`http://localhost`或`https://localhost`(自签名HTTPS演示)就能看到效果，PHP代码在文件`./www/localhost/index.php`。
+    如果失败可以考虑更改镜像源daemon.json
+   ```
+   "registry-mirrors": [
+        "https://dockerpull.org/",
+        "https://mirror.ccs.tencentyun.com",
+        "https://dockerhub.azk8s.cn",
+        "https://docker.mirrors.ustc.edu.cn"
+    ]
+   ```
+6. 在浏览器中访问：`http://localhost`或`https://localhost`(自签名HTTPS演示)就能看到效果，PHP代码在文件`./www/localhost/index.php`。
 
 ## 3.PHP和扩展
 ### 3.1 切换Nginx使用的PHP版本
