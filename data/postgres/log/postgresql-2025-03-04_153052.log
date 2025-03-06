@@ -12,3 +12,10 @@
 2025-03-04 15:55:13 CST [112]: [4-1] user=postgres,db=default,app=[unknown],client=172.18.0.7 LOG:  disconnection: session time: 0:00:00.383 user=postgres database=default host=172.18.0.7 port=55400
 2025-03-04 15:55:53 CST [58]: [3-1] user=,db=,app=,client= LOG:  checkpoint starting: time
 2025-03-04 15:55:58 CST [58]: [4-1] user=,db=,app=,client= LOG:  checkpoint complete: wrote 47 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.651 s, sync=0.978 s, total=5.759 s; sync files=40, longest=0.046 s, average=0.025 s; distance=149 kB, estimate=154 kB
+2025-03-04 16:19:46 CST [1]: [8-1] user=,db=,app=,client= LOG:  received fast shutdown request
+2025-03-04 16:19:46 CST [1]: [9-1] user=,db=,app=,client= LOG:  aborting any active transactions
+2025-03-04 16:19:46 CST [1]: [10-1] user=,db=,app=,client= LOG:  background worker "logical replication launcher" (PID 63) exited with exit code 1
+2025-03-04 16:19:46 CST [58]: [5-1] user=,db=,app=,client= LOG:  shutting down
+2025-03-04 16:19:46 CST [58]: [6-1] user=,db=,app=,client= LOG:  checkpoint starting: shutdown immediate
+2025-03-04 16:19:46 CST [58]: [7-1] user=,db=,app=,client= LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.001 s, total=0.151 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=139 kB
+2025-03-04 16:19:46 CST [1]: [11-1] user=,db=,app=,client= LOG:  database system is shut down

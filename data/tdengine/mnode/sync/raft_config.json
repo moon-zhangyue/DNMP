@@ -6,7 +6,7 @@
 			"changeVersion":	0,
 			"nodeInfo":	[{
 					"nodePort":	6030,
-					"nodeFqdn":	"de469d52bce1",
+					"nodeFqdn":	"tdengine",
 					"nodeId":	"1",
 					"clusterId":	"0",
 					"isReplica":	"true"

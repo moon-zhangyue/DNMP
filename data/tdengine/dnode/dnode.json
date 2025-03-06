@@ -2,11 +2,11 @@
 	"dnodeId":	1,
 	"dnodeVer":	"2",
 	"engineVer":	"30000000",
-	"clusterId":	"9168940215715824043",
+	"clusterId":	"7569930960866417787",
 	"dropped":	0,
 	"dnodes":	[{
 			"id":	1,
-			"fqdn":	"de469d52bce1",
+			"fqdn":	"tdengine",
 			"port":	6030,
 			"isMnode":	1
 		}]
