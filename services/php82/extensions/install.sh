@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# chmod +x /tmp/extensions/tdengine.sh
+# /tmp/extensions/tdengine.sh
+
 export MC="-j$(nproc)"
 
 echo
@@ -15,7 +18,8 @@ echo
 
 
 if [ "${PHP_EXTENSIONS}" != "" ]; then
-    apk --update add --no-cache --virtual .build-deps autoconf g++ libtool make curl-dev gettext-dev linux-headers
+    echo "---------- Install php extensions ----------"
+    apk add --no-cache autoconf g++ libtool make curl-dev gettext-dev linux-headers
 fi
 
 
@@ -41,9 +45,9 @@ isPhpVersionGreaterOrEqual()
     local PHP_MINOR_VERSION=$(php -r "echo PHP_MINOR_VERSION;")
 
     if [[ "$PHP_MAJOR_VERSION" -gt "$1" || "$PHP_MAJOR_VERSION" -eq "$1" && "$PHP_MINOR_VERSION" -ge "$2" ]]; then
-        return 1;
+        return 0;  # 返回0表示成功，即版本大于等于指定版本
     else
-        return 0;
+        return 1;  # 返回1表示失败，即版本小于指定版本
     fi
 }
 
@@ -211,7 +215,7 @@ if [[ -z "${EXTENSIONS##*,gd,*}" ]]; then
     echo "---------- Install gd ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         # "--with-xxx-dir" was removed from php 7.4,
         # issue: https://github.com/docker-library/php/issues/912
         options="--with-freetype --with-jpeg --with-webp"
@@ -280,6 +284,11 @@ fi
 
 if [[ -z "${EXTENSIONS##*,curl,*}" ]]; then
     echo "---------- curl is installed ----------"
+fi
+
+# 处理Libcurl扩展（实际上是curl扩展的别名）
+if [[ -z "${EXTENSIONS##*,Libcurl,*}" ]]; then
+    echo "---------- Libcurl is an alias for curl, which is already installed ----------"
 fi
 
 if [[ -z "${EXTENSIONS##*,readline,*}" ]]; then
@@ -381,7 +390,7 @@ fi
 
 if [[ -z "${EXTENSIONS##*,ssh2,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install ssh2 ----------"
         printf "\n" | apk add libssh2-dev
         pecl install ssh2-1.1.2
@@ -393,29 +402,29 @@ fi
 
 if [[ -z "${EXTENSIONS##*,protobuf,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install protobuf ----------"
         printf "\n" | pecl install protobuf
         docker-php-ext-enable protobuf
     else
-        echo "yar requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
+        echo "protobuf requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
 if [[ -z "${EXTENSIONS##*,yac,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install yac ----------"
         printf "\n" | pecl install yac-2.0.2
         docker-php-ext-enable yac
     else
-        echo "yar requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
+        echo "yac requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
 if [[ -z "${EXTENSIONS##*,yar,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install yar ----------"
         printf "\n" | pecl install yar
         docker-php-ext-enable yar
@@ -429,12 +438,12 @@ fi
 
 if [[ -z "${EXTENSIONS##*,yaconf,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install yaconf ----------"
         printf "\n" | pecl install yaconf
         docker-php-ext-enable yaconf
     else
-        echo "yar requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
+        echo "yaconf requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
@@ -453,7 +462,7 @@ fi
 
 if [[ -z "${EXTENSIONS##*,pdo_sqlsrv,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install pdo_sqlsrv ----------"
         apk add --no-cache unixodbc-dev
         printf "\n" | pecl install pdo_sqlsrv
@@ -467,19 +476,19 @@ fi
 
 if [[ -z "${EXTENSIONS##*,sqlsrv,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install sqlsrv ----------"
         apk add --no-cache unixodbc-dev
         printf "\n" | pecl install sqlsrv
         docker-php-ext-enable sqlsrv
     else
-        echo "pdo_sqlsrv requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
+        echo "sqlsrv requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
 if [[ -z "${EXTENSIONS##*,mcrypt,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- Install mcrypt ----------"
         apk add --no-cache libmcrypt-dev libmcrypt re2c
         printf "\n" |pecl install mcrypt
@@ -494,7 +503,7 @@ fi
 if [[ -z "${EXTENSIONS##*,mysql,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo "---------- mysql was REMOVED from PHP 8.0.0 ----------"
     else
         echo "---------- Install mysql ----------"
@@ -504,7 +513,7 @@ fi
 
 if [[ -z "${EXTENSIONS##*,sodium,*}" ]]; then
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         echo
         echo "Sodium is bundled with PHP from PHP 8.0.0"
         echo
@@ -596,8 +605,8 @@ if [[ -z "${EXTENSIONS##*,swoole,*}" ]]; then
     echo "---------- Install swoole ----------"
     apk add --no-cache libstdc++
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" = "1" ]]; then
-        installExtensionFromTgz swoole-5.0.2 --enable-openssl --enable-http2
+    if [[ "$?" = "0" ]]; then
+        installExtensionFromTgz swoole-6.0.2 --enable-openssl --enable-http2
     fi
 fi
 
@@ -607,7 +616,7 @@ if [[ -z "${EXTENSIONS##*,zip,*}" ]]; then
     apk add --no-cache libzip-dev
 
     isPhpVersionGreaterOrEqual 8 0
-    if [[ "$?" != "1" ]]; then
+    if [[ "$?" != "0" ]]; then
         docker-php-ext-configure zip --with-libzip=/usr/include
     fi
 
@@ -625,11 +634,11 @@ if [[ -z "${EXTENSIONS##*,xlswriter,*}" ]]; then
     echo "---------- Install xlswriter ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         printf "\n" | pecl install xlswriter
         docker-php-ext-enable xlswriter
     else
-        echo "---------- PHP Version>= 8.0----------"
+        echo "xlswriter requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
@@ -637,12 +646,12 @@ if [[ -z "${EXTENSIONS##*,rdkafka,*}" ]]; then
     echo "---------- Install rdkafka ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         apk add librdkafka-dev
         printf "\n" | pecl install rdkafka
         docker-php-ext-enable rdkafka
     else
-        echo "---------- PHP Version>= 8.0----------"
+        echo "rdkafka requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
@@ -650,13 +659,68 @@ if [[ -z "${EXTENSIONS##*,zookeeper,*}" ]]; then
     echo "---------- Install zookeeper ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
-        apk add re2c
-        apk add libzookeeper-dev --repository http://${CONTAINER_PACKAGE_URL}/alpine/edge/testing/
+    if [[ "$?" = "0" ]]; then
+        echo "---------- Installing zookeeper dependencies ----------"
+        # 添加必要的依赖
+        apk add --no-cache re2c autoconf make g++
+        
+        # 安装 libzookeeper
+        # 尝试从主仓库安装
+        if ! apk add --no-cache libzookeeper-dev 2>/dev/null; then
+            # 如果主仓库安装失败，尝试从 edge/testing 仓库安装
+            echo "尝试从 edge/testing 仓库安装 libzookeeper-dev"
+            apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ libzookeeper-dev
+            
+            # 如果仍然失败，尝试手动编译安装
+            if [ $? -ne 0 ]; then
+                echo "从仓库安装失败，尝试手动编译安装 libzookeeper"
+                cd /tmp
+                wget https://archive.apache.org/dist/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1.tar.gz
+                tar -xzf apache-zookeeper-3.7.1.tar.gz
+                cd apache-zookeeper-3.7.1/zookeeper-client/zookeeper-client-c
+                ./configure --prefix=/usr
+                make && make install
+                cd /tmp
+                rm -rf apache-zookeeper-3.7.1 apache-zookeeper-3.7.1.tar.gz
+            fi
+        fi
+        
+        # 安装 PHP 扩展
+        echo "---------- Installing PHP zookeeper extension ----------"
         printf "\n" | pecl install zookeeper
+        
+        # 检查安装结果
+        if [ $? -ne 0 ]; then
+            echo "pecl install 失败，尝试从源码安装"
+            cd /tmp
+            wget https://pecl.php.net/get/zookeeper-1.2.0.tgz
+            tar -xzf zookeeper-1.2.0.tgz
+            cd zookeeper-1.2.0
+            phpize
+            ./configure
+            make && make install
+            cd /tmp
+            rm -rf zookeeper-1.2.0 zookeeper-1.2.0.tgz
+        fi
+        
         docker-php-ext-enable zookeeper
     else
-        echo "---------- PHP Version>= 8.0----------"
+        echo "---------- PHP Version>= 8.0 required for zookeeper extension ----------"
+    fi
+fi
+
+# 添加 excimer 扩展的安装支持
+if [[ -z "${EXTENSIONS##*,excimer,*}" ]]; then
+    echo "---------- Install excimer ----------"
+    isPhpVersionGreaterOrEqual 8 0
+
+    if [[ "$?" = "0" ]]; then
+        echo "---------- Installing excimer extension ----------"
+        apk add --no-cache linux-headers
+        printf "\n" | pecl install excimer
+        docker-php-ext-enable excimer
+    else
+        echo "---------- PHP Version>= 8.0 required for excimer extension ----------"
     fi
 fi
 
@@ -664,12 +728,12 @@ if [[ -z "${EXTENSIONS##*,phalcon,*}" ]]; then
     echo "---------- Install phalcon ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
         printf "\n" | pecl install phalcon
         docker-php-ext-enable psr
         docker-php-ext-enable phalcon
     else
-        echo "---------- PHP Version>= 8.0----------"
+        echo "phalcon requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 
@@ -677,7 +741,7 @@ if [[ -z "${EXTENSIONS##*,sdebug,*}" ]]; then
     echo "---------- Install sdebug ----------"
     isPhpVersionGreaterOrEqual 8 0
 
-    if [[ "$?" = "1" ]]; then
+    if [[ "$?" = "0" ]]; then
                 curl -SL "https://github.com/swoole/sdebug/archive/sdebug_2_9-beta.tar.gz" -o sdebug.tar.gz \
              && mkdir -p sdebug \
              && tar -xf sdebug.tar.gz -C sdebug --strip-components=1 \
@@ -690,7 +754,7 @@ if [[ -z "${EXTENSIONS##*,sdebug,*}" ]]; then
              ) \
              && docker-php-ext-enable xdebug
     else
-        echo "---------- PHP Version>= 8.0----------"
+        echo "sdebug requires PHP >= 8.0.0, installed version is ${PHP_VERSION}"
     fi
 fi
 

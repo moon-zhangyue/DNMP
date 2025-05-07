@@ -1,0 +1,60 @@
+# 全局配置
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 告警规则配置
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# 抓取配置
+scrape_configs:
+  - job_name: 'consul-services'
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['kafka', 'zookeeper']
+    relabel_configs:
+      - source_labels: ['__meta_consul_service']
+        target_label: 'service'
+      - source_labels: ['__meta_consul_service_id']
+        target_label: 'service_id'
+      - source_labels: ['__meta_consul_tags']
+        target_label: 'tags'
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+  
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+  
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+  
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+  
+  - job_name: 'php-fpm'
+    static_configs:
+      - targets: ['php-fpm-exporter:9253']
+  
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: /metrics
+  
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+  
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']
+  
+  # 移除或注释掉 cadvisor 配置
+  # - job_name: 'cadvisor'
+  #   static_configs:
+  #     - targets: ['cadvisor:8080']

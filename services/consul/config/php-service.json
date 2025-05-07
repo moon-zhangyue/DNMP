@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "php",
+    "tags": ["php", "fpm", "php82"],
+    "port": 9000,
+    "check": {
+      "id": "php-fpm",
+      "name": "PHP-FPM on port 9000",
+      "tcp": "php82:9000",
+      "interval": "10s",
+      "timeout": "1s"
+    }
+  }
+}

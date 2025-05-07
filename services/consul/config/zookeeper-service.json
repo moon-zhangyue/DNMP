@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "zookeeper",
+    "tags": ["zookeeper", "kafka-dependency"],
+    "port": 2181,
+    "check": {
+      "id": "zookeeper",
+      "name": "Zookeeper on port 2181",
+      "tcp": "zookeeper:2181",
+      "interval": "10s",
+      "timeout": "1s"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "kafka-exporter",
+    "tags": ["kafka", "monitoring", "prometheus"],
+    "port": 9308,
+    "check": {
+      "id": "kafka-exporter",
+      "name": "Kafka Exporter on port 9308",
+      "http": "http://kafka-exporter:9308/metrics",
+      "interval": "10s",
+      "timeout": "1s"
+    }
+  }
+}

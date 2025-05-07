@@ -1,0 +1,14 @@
+# Yearning配置文件
+[Mysql]
+Db = "Yearning"
+Host = "mysql5"
+Port = "3306"
+Password = "123456"
+User = "root"
+
+[General]
+SecretKey = "dbcjqheupqjsuwsm"
+Host = "0.0.0.0"
+Port = "8000"
+DefaultUser = "admin"
+DefaultPass = "Yearning_admin" 

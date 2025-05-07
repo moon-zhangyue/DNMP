@@ -6,6 +6,20 @@ ARG ELASTICSEARCH_PLUGINS
 
 ENV PLUGINS=",${ELASTICSEARCH_PLUGINS},"
 
+# 设置非交互式安装，避免插件安装时的提示
+ENV ELASTIC_CONTAINER=true
+
+# 设置插件安装的批处理模式
+RUN echo "Installing plugins with --batch mode"
+
+# 创建临时目录用于插件安装
+RUN mkdir -p /tmp/plugins
+
+# 复制本地插件文件到容器中
+# COPY plugins/analysis-ik-Latest.zip /usr/share/elasticsearch/plugins/
+# COPY plugins/analysis-pinyin-Latest.zip /usr/share/elasticsearch/plugins/
+
+
 RUN if [[ -z "${PLUGINS##*,amazon-ec2,*}" ]]; then \
         printf "y\n" | elasticsearch-plugin install amazon-ec2; \
     fi \
@@ -107,10 +121,28 @@ RUN if [[ -z "${PLUGINS##*,amazon-ec2,*}" ]]; then \
     fi \
     && \
     if [[ -z "${PLUGINS##*,analysis-ik,*}" ]]; then \
-        printf "y\n" | elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v${ELASTICSEARCH_VERSION}/elasticsearch-analysis-ik-${ELASTICSEARCH_VERSION}.zip; \
+        # 使用本地插件文件，不从网络下载\
+        printf "y\n" | elasticsearch-plugin install --batch file:///usr/share/elasticsearch/plugins/analysis-ik-Latest.zip; \
     fi \
     && \
     if [[ -z "${PLUGINS##*,analysis-pinyin,*}" ]]; then \
-      printf "y\n" | elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-pinyin/releases/download/v${ELASTICSEARCH_VERSION}/elasticsearch-analysis-pinyin-${ELASTICSEARCH_VERSION}.zip; \
+        # 使用本地插件文件，不从网络下载\
+        printf "y\n" | elasticsearch-plugin install --batch file:///usr/share/elasticsearch/plugins/analysis-pinyin-Latest.zip; \
+    fi \
+    && \
+    if [[ -z "${PLUGINS##*,analysis-smartcn,*}" ]]; then \
+      printf "y\n" | elasticsearch-plugin install analysis-smartcn; \
     fi
+
+# 复制安装脚本并设置执行权限
+# COPY plugins/install-plugins.sh /usr/local/bin/
+# RUN chmod +x /usr/local/bin/install-plugins.sh
+
+# 清理plugins目录中的zip文件，避免被当作目录处理
+RUN find /usr/share/elasticsearch/plugins -name "*.zip" -type f -delete
+RUN find /usr/share/elasticsearch/plugins -name "install-plugins.sh" -type f -delete
+
+# 设置启动命令，确保在启动Elasticsearch前运行安装脚本
+# CMD ["/bin/bash", "-c", "/usr/local/bin/install-plugins.sh && /usr/local/bin/docker-entrypoint.sh eswrapper"]
+CMD ["/bin/bash", "-c", "/usr/local/bin/docker-entrypoint.sh eswrapper"]
 

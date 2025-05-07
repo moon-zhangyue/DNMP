@@ -40,4 +40,10 @@ ENV COMPOSER_HOME=/tmp/composer
 RUN apk --no-cache add shadow && usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 
-WORKDIR /www
+# WORKDIR /www
+# COPY ./extensions/tideways.sh /tmp/tideways.sh
+# RUN chmod +x /tmp/tideways.sh \
+#     && /tmp/tideways.sh \
+#     && rm -rf /tmp/tideways
+
+

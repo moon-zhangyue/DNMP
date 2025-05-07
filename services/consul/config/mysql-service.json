@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "mysql",
+    "tags": ["mysql", "database", "mysql5"],
+    "port": 3306,
+    "check": {
+      "id": "mysql",
+      "name": "MySQL on port 3306",
+      "tcp": "mysql5:3306",
+      "interval": "10s",
+      "timeout": "1s"
+    }
+  }
+}

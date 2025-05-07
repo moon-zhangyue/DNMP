@@ -19,8 +19,8 @@
 # Xms represents the initial size of total heap space
 # Xmx represents the maximum size of total heap space
 
--Xms1g
--Xmx1g
+-Xms512m
+-Xmx512m
 
 ################################################################
 ## Expert settings
@@ -33,17 +33,15 @@
 ################################################################
 
 ## GC configuration
--XX:+UseConcMarkSweepGC
--XX:CMSInitiatingOccupancyFraction=75
--XX:+UseCMSInitiatingOccupancyOnly
+# Removed deprecated CMS garbage collector settings
+# -XX:+UseConcMarkSweepGC
+# -XX:CMSInitiatingOccupancyFraction=75
+# -XX:+UseCMSInitiatingOccupancyOnly
 
 ## G1GC Configuration
-# NOTE: G1GC is only supported on JDK version 10 or later.
-# To use G1GC uncomment the lines below.
-# 10-:-XX:-UseConcMarkSweepGC
-# 10-:-XX:-UseCMSInitiatingOccupancyOnly
-# 10-:-XX:+UseG1GC
-# 10-:-XX:InitiatingHeapOccupancyPercent=75
+# G1GC is the recommended garbage collector for Elasticsearch
+-XX:+UseG1GC
+-XX:InitiatingHeapOccupancyPercent=75
 
 ## DNS cache policy
 # cache ttl in seconds for positive DNS lookups noting that this overrides the

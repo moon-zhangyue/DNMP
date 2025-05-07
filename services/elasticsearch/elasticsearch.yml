@@ -1,7 +1,24 @@
 cluster.name: "docker-cluster"
 network.host: 0.0.0.0
 
-# minimum_master_nodes need to be explicitly set when bound on a public IP
-# set to 1 to allow single node clusters
-# Details: https://github.com/elastic/elasticsearch/pull/17288
-discovery.zen.minimum_master_nodes: 1
+# 配置为单节点模式
+discovery.type: single-node
+
+# 禁用安全功能，用于开发环境
+xpack.security.enabled: false
+
+# 允许匿名访问
+xpack.security.authc:
+  anonymous:
+    username: anonymous_user
+    roles: superuser
+    authz_exception: true
+    
+# 索引级别的设置应通过API或索引模板配置，而不是在节点配置中设置
+# 已移除索引级别的设置以解决 "node settings must not contain any index level settings" 错误
+
+http.cors.enabled: true
+http.cors.allow-origin: "*"  # 允许所有来源，生产环境应指定具体域名
+http.cors.allow-methods: OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers: "X-Requested-With, Content-Type, Content-Length, Authorization"
+http.cors.allow-credentials: true  # 如果需要发送凭据(cookie等)
