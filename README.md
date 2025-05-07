@@ -13,7 +13,7 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 
 1. `100%`开源
 2. `100%`遵循Docker标准
-3. 支持**多版本PHP**共存，可任意切换(PHP5.4、PHP5.6、PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)
+3. 支持**多版本PHP**共存，可任意切换(PHP5.6、PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)
 4. 支持绑定**任意多个域名**
 5. 支持**HTTPS和HTTP/2**
 6. **PHP源代码、MySQL数据、配置文件、日志文件**都可在Host中直接修改查看
@@ -83,7 +83,6 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 │   ├── mysql5                  MySQL5 配置文件目录
 │   ├── nginx                   Nginx 配置文件目录
 │   ├── php                     PHP5.6 - PHP8.2 配置目录
-│   ├── php54                   PHP5.4 配置目录
 │   ├── php56                   PHP5.6 配置目录
 │   ├── php80                   PHP8.0 配置目录
 │   ├── php82                   PHP8.2 配置目录
@@ -116,7 +115,7 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
     $ cp env.sample .env                                # 复制环境变量文件
     $ cp docker-compose.sample.yml docker-compose.yml   # 复制 docker-compose 配置文件。默认启动3个服务：
                                                         # Nginx、PHP7和MySQL8。要开启更多其他服务，如Redis、
-                                                        # PHP5.6、PHP5.4、MongoDB，ElasticSearch等，请删
+                                                        # PHP5.6、MongoDB，ElasticSearch等，请删
                                                         # 除服务块前的注释
     $ docker-compose up                                 # 启动
     ```
@@ -133,17 +132,17 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 
 ## 3.PHP和扩展
 ### 3.1 切换Nginx使用的PHP版本
-首先，需要启动其他版本的PHP，比如PHP5.4，那就先在`docker-compose.yml`文件中删除PHP5.4前面的注释，再启动PHP5.4容器。
+首先，需要启动其他版本的PHP，比如PHP8.2，那就先在`docker-compose.yml`文件中删除PHP8.2前面的注释，再启动PHP8.2容器。
 
-PHP5.4启动后，打开Nginx 配置，修改`fastcgi_pass`的主机地址，由`php`改为`php54`，如下：
+PHP8.2启动后，打开Nginx 配置，修改`fastcgi_pass`的主机地址，由`php`改为`php82`，如下：
 ```
     fastcgi_pass   php:9000;
 ```
 为：
 ```
-    fastcgi_pass   php54:9000;
+    fastcgi_pass   php82:9000;
 ```
-其中 `php` 和 `php54` 是`docker-compose.yml`文件中服务器的名称。
+其中 `php` 和 `php82` 是`docker-compose.yml`文件中服务器的名称。
 
 最后，**重启 Nginx** 生效。
 ```bash
@@ -159,7 +158,7 @@ PHP的很多功能都是通过扩展实现，而安装扩展是一个略费时�
 增加需要的PHP扩展：
 ```bash
 PHP_EXTENSIONS=pdo_mysql,opcache,redis       # PHP 要安装的扩展列表，英文逗号隔开
-PHP54_EXTENSIONS=opcache,redis                 # PHP 5.4要安装的扩展列表，英文逗号隔开
+PHP54_EXTENSIONS=opcache,redis                 # PHP 8.2要安装的扩展列表，英文逗号隔开
 ```
 然后重新build PHP镜像。
 ```bash
