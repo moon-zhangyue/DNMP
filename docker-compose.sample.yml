@@ -124,30 +124,6 @@ services:
   #    networks:
   #      - default
 
-  #  php56:
-  #    build:
-  #      context: ./services/php56
-  #      args:
-  #        PHP_VERSION: php:${PHP56_VERSION}-fpm-alpine
-  #        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
-  #        PHP_EXTENSIONS: ${PHP56_EXTENSIONS}
-  #        TZ: "$TZ"
-  #    container_name: php56
-  #    expose:
-  #      - 9501
-  #    volumes:
-  #      - ${SOURCE_DIR}:/www/:rw
-  #      - ${PHP56_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
-  #      - ${PHP56_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
-  #      - ${PHP56_LOG_DIR}:/var/log/php
-  #      - ${DATA_DIR}/composer:/tmp/composer
-  #    restart: always
-  #    cap_add:
-  #      - SYS_PTRACE
-  #    networks:
-  #      - default
-  #
-
   mysql:
      image: mysql:${MYSQL_VERSION}
      container_name: mysql-8
@@ -166,22 +142,22 @@ services:
        MYSQL_ROOT_HOST: "${MYSQL_ROOT_HOST}"
        TZ: "$TZ"
 
-  mysql5:
-    image: mysql:${MYSQL5_VERSION}
-    container_name: mysql5
-    ports:
-      - "${MYSQL5_HOST_PORT}:3306"
-    volumes:
-      - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
-      - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
-      - ${MYSQL5_LOG_DIR}:/var/log/mysql/:rw
-    restart: always
-    networks:
-      - default
-    environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
-      MYSQL_ROOT_HOST: "${MYSQL5_ROOT_HOST}"
-      TZ: "$TZ"
+  # mysql5:
+  #   image: mysql:${MYSQL5_VERSION}
+  #   container_name: mysql5
+  #   ports:
+  #     - "${MYSQL5_HOST_PORT}:3306"
+  #   volumes:
+  #     - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
+  #     - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
+  #     - ${MYSQL5_LOG_DIR}:/var/log/mysql/:rw
+  #   restart: always
+  #   networks:
+  #     - default
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
+  #     MYSQL_ROOT_HOST: "${MYSQL5_ROOT_HOST}"
+  #     TZ: "$TZ"
 
   #  openresty:
   #    image:  openresty/openresty:${OPENRESTY_VERSION}
@@ -480,11 +456,6 @@ services:
     networks:
       - default
 
-  # 删除或注释掉原来的 kafka-manager 配置
-  # kafka-manager:
-  #   image: hlebalbau/kafka-manager:stable
-  #   ...
-
   # 添加 kafdrop 配置
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
@@ -555,93 +526,93 @@ services:
   # Prometheus 服务已存在，保持不变
   
   # Node Exporter - 系统指标监控
-  # node-exporter:
-  #   image: prom/node-exporter:latest
-  #   container_name: node-exporter
-  #   restart: always
-  #   ports:
-  #     - "${NODE_EXPORTER_PORT}:9100"
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/rootfs:ro
-  #   command:
-  #     - '--path.procfs=/host/proc'
-  #     - '--path.sysfs=/host/sys'
-  #     - '--path.rootfs=/rootfs'
-  #     - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
-  #   networks:
-  #     - default
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "${NODE_EXPORTER_PORT}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - default
   
   # MySQL Exporter - MySQL 监控
-  # mysql-exporter:
-  #   image: prom/mysqld-exporter:latest
-  #   container_name: mysql-exporter
-  #   restart: always
-  #   ports:
-  #     - "${MYSQL_EXPORTER_PORT}:9104"
-  #   environment:
-  #     - DATA_SOURCE_NAME=root:${MYSQL5_ROOT_PASSWORD}@(mysql5:3306)/
-  #   depends_on:
-  #     - mysql5
-  #   networks:
-  #     - default
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    restart: always
+    ports:
+      - "${MYSQL_EXPORTER_PORT}:9104"
+    environment:
+      - DATA_SOURCE_NAME=root:${MYSQL5_ROOT_PASSWORD}@(mysql5:3306)/
+    depends_on:
+      - mysql5
+    networks:
+      - default
   
   # Redis Exporter - Redis 监控
-  # redis-exporter:
-  #   image: oliver006/redis_exporter:latest
-  #   container_name: redis-exporter
-  #   restart: always
-  #   ports:
-  #     - "${REDIS_EXPORTER_PORT}:9121"
-  #   environment:
-  #     - REDIS_ADDR=redis:6379
-  #   depends_on:
-  #     - redis
-  #   networks:
-  #     - default
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: always
+    ports:
+      - "${REDIS_EXPORTER_PORT}:9121"
+    environment:
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - default
   
   # Nginx Exporter - Nginx 监控
-  # nginx-exporter:
-  #   image: nginx/nginx-prometheus-exporter:latest
-  #   container_name: nginx-exporter
-  #   restart: always
-  #   ports:
-  #     - "${NGINX_EXPORTER_PORT}:9113"
-  #   command:
-  #     - '-nginx.scrape-uri=http://nginx20:80/nginx_status'
-  #   depends_on:
-  #     - nginx
-  #   networks:
-  #     - default
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    restart: always
+    ports:
+      - "${NGINX_EXPORTER_PORT}:9113"
+    command:
+      - '-nginx.scrape-uri=http://nginx20:80/nginx_status'
+    depends_on:
+      - nginx
+    networks:
+      - default
   
   # PHP-FPM Exporter - PHP-FPM 监控
-  # php-fpm-exporter:
-  #   image: hipages/php-fpm_exporter:latest
-  #   container_name: php-fpm-exporter
-  #   restart: always
-  #   ports:
-  #     - "${PHP_FPM_EXPORTER_PORT}:9253"
-  #   environment:
-  #     - PHP_FPM_SCRAPE_URI=tcp://php82:9000/status
-  #   depends_on:
-  #     - php
-  #   networks:
-  #     - default
+  php-fpm-exporter:
+    image: hipages/php-fpm_exporter:latest
+    container_name: php-fpm-exporter
+    restart: always
+    ports:
+      - "${PHP_FPM_EXPORTER_PORT}:9253"
+    environment:
+      - PHP_FPM_SCRAPE_URI=tcp://php82:9000/status
+    depends_on:
+      - php
+    networks:
+      - default
   
   # Kafka Exporter - Kafka 监控
-  # kafka-exporter:
-  #   image: danielqsj/kafka-exporter:latest
-  #   container_name: kafka-exporter
-  #   restart: always
-  #   ports:
-  #     - "${KAFKA_EXPORTER_PORT}:9308"
-  #   command:
-  #     - '--kafka.server=kafka:9092'
-  #   depends_on:
-  #     - kafka
-  #   networks:
-  #     - default
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    restart: always
+    ports:
+      - "${KAFKA_EXPORTER_PORT}:9308"
+    command:
+      - '--kafka.server=kafka:9092'
+    depends_on:
+      - kafka
+    networks:
+      - default
       
   # TDengine - 时序数据库
   tdengine:
@@ -731,6 +702,21 @@ services:
       MYSQL_DB: tp8
     depends_on:
       - mysql5
+    networks:
+      - default
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.4
+    container_name: meilisearch
+    ports:
+      - "${MEILISEARCH_HOST_PORT}:7700"
+    volumes:
+      - ${DATA_DIR}/meilisearch:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-masterKey}
+      - MEILI_NO_ANALYTICS=${MEILISEARCH_NO_ANALYTICS:-true}
+      - MEILI_ENV=${MEILI_ENV:-development}
+    restart: always
     networks:
       - default
 

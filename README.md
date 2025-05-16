@@ -1,4 +1,4 @@
-DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSearch + MongoDB + RabbitMQ + Kafka + Zookeeper + TDengine + PostgreSQL + Grafana + Prometheus + Consul + InfluxDB + Yearning）是一款在yeszao-dnmp基础上修改添加的全功能的**LNMP一键安装程序，支持Arm CPU**。
+docker全家桶镜像（Docker + Nginx/Openresty + MySQL5,8 + PHP7,8 + Redis + Node + ElasticSearch + meilisearch + SUPERVISOR + MongoDB + RabbitMQ + Kafka + Zookeeper + TDengine + PostgreSQL + Grafana + Prometheus + Consul + InfluxDB + Yearning + Golang + supervisor）是一款在yeszao-dnmp基础上修改的全功能的**LNMP一键安装程序，支持Arm CPU**。
 
 
 
@@ -13,19 +13,20 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 
 1. `100%`开源
 2. `100%`遵循Docker标准
-3. 支持**多版本PHP**共存，可任意切换(PHP5.6、PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)
+3. 支持**多版本PHP**共存，可任意切换(PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)(更新版本PHP会继续添加)
 4. 支持绑定**任意多个域名**
 5. 支持**HTTPS和HTTP/2**
 6. **PHP源代码、MySQL数据、配置文件、日志文件**都可在Host中直接修改查看
 7. 内置**完整PHP扩展安装**命令
 8. 默认支持`pdo_mysql`、`mysqli`、`mbstring`、`gd`、`curl`、`opcache`等常用热门扩展，根据环境灵活配置
 9. 可一键选配常用服务：
-    - 多PHP版本：PHP5.6、PHP7.0-7.4、PHP8.0、PHP8.2
+    - 多PHP版本：PHP7.0-7.4、PHP8.0、PHP8.2
     - Web服务：Nginx、Openresty
-    - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch、TDengine、PostgreSQL、InfluxDB
+    - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch、TDengine、PostgreSQL、InfluxDB、meilisearch
     - 消息队列：RabbitMQ、Kafka
     - 辅助工具：Kibana、Logstash、phpMyAdmin、phpRedisAdmin、AdminMongo、Zookeeper、Consul、Yearning、Node
     - 监测工具：Grafana、Prometheus、Node Exporter、MySQL Exporter、Redis Exporter、Consul Exporter、InfluxDB Exporter、Nginx Exporter
+    - 其他语言：Golang
 10. 实际项目中应用，确保`100%`可用
 11. 所有镜像源于[Docker官方仓库](https://hub.docker.com)，安全可靠
 12. 一次配置，**Windows、Linux、MacOs**皆可用
@@ -75,17 +76,18 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
 │   ├── esdata                  ElasticSearch 数据目录
 │   ├── mongo                   MongoDB 数据目录
 │   ├── mysql                   MySQL8 数据目录
-│   └── mysql5                  MySQL5 数据目录                      日志目录
+│   └── mysql5                  MySQL5 数据目录
+|   ├── ...                     其他数据目录
 │   ├── zookeeper               zookeeper 数据目录
 ├── services                    服务构建文件和配置文件目录
 │   ├── elasticsearch           ElasticSearch 配置文件目录
 │   ├── mysql                   MySQL8 配置文件目录
 │   ├── mysql5                  MySQL5 配置文件目录
 │   ├── nginx                   Nginx 配置文件目录
-│   ├── php                     PHP5.6 - PHP8.2 配置目录
-│   ├── php56                   PHP5.6 配置目录
+│   ├── php                     PHP配置目录
 │   ├── php80                   PHP8.0 配置目录
 │   ├── php82                   PHP8.2 配置目录
+|   ├── ...                     其他配置目录
 │   └── redis                   Redis 配置目录
 │   ├── openresty               openresty 配置目录
 │   ├── kafka                   kafka 配置目录
@@ -115,7 +117,7 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
     $ cp env.sample .env                                # 复制环境变量文件
     $ cp docker-compose.sample.yml docker-compose.yml   # 复制 docker-compose 配置文件。默认启动3个服务：
                                                         # Nginx、PHP7和MySQL8。要开启更多其他服务，如Redis、
-                                                        # PHP5.6、MongoDB，ElasticSearch等，请删
+                                                        # MongoDB，ElasticSearch等，请删
                                                         # 除服务块前的注释
     $ docker-compose up                                 # 启动
     ```
@@ -125,7 +127,12 @@ DNMP（Docker + Nginx/Openresty + MySQL5,8 + PHP5,7,8 + Redis + Node + ElasticSe
         "https://dockerpull.org/",
         "https://mirror.ccs.tencentyun.com",
         "https://dockerhub.azk8s.cn",
-        "https://docker.mirrors.ustc.edu.cn"
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://proxy.1panel.live",
+        "https://docker.1panel.top",
+        "https://docker.m.daocloud.io",
+        "https://docker.1ms.run",
+        "https://docker.ketches.cn"
     ]
    ```
 6. 在浏览器中访问：`http://localhost`或`https://localhost`(自签名HTTPS演示)就能看到效果，PHP代码在文件`./www/localhost/index.php`。
@@ -158,7 +165,7 @@ PHP的很多功能都是通过扩展实现，而安装扩展是一个略费时�
 增加需要的PHP扩展：
 ```bash
 PHP_EXTENSIONS=pdo_mysql,opcache,redis       # PHP 要安装的扩展列表，英文逗号隔开
-PHP54_EXTENSIONS=opcache,redis                 # PHP 8.2要安装的扩展列表，英文逗号隔开
+PHP82_EXTENSIONS=opcache,redis               # PHP 8.2要安装的扩展列表，英文逗号隔开
 ```
 然后重新build PHP镜像。
 ```bash
@@ -414,14 +421,13 @@ $ docker-compose down                       # 停止并删除容器，网络，�
 $ docker ps           # 查看所有运行中的容器
 $ docker ps -a        # 所有容器
 ```
-输出的`NAMES`那一列就是容器的名称，如果使用默认配置，那么名称就是`nginx`、`php`、`php56`、`mysql`等。
+输出的`NAMES`那一列就是容器的名称，如果使用默认配置，那么名称就是`nginx`、`php`、`php82`、`mysql`等。
 
 然后，打开`~/.bashrc`或者`~/.zshrc`文件，加上：
 ```bash
 alias dnginx='docker exec -it nginx /bin/sh'
 alias dphp='docker exec -it php /bin/sh'
-alias dphp56='docker exec -it php56 /bin/sh'
-alias dphp54='docker exec -it php54 /bin/sh'
+alias dphp82='docker exec -it php82 /bin/sh'
 alias dmysql='docker exec -it mysql /bin/bash'
 alias dredis='docker exec -it redis /bin/sh'
 ```
