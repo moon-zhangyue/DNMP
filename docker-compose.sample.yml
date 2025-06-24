@@ -99,7 +99,32 @@ services:
     networks:
       - default
 
-
+  php84:
+    build:
+      context: ./services/php84
+      args:
+        PHP_VERSION: php:${PHP84_VERSION}-fpm-alpine
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+        PHP_EXTENSIONS: ${PHP84_EXTENSIONS}
+        TZ: "$TZ"
+    container_name: php84
+    expose:
+      - 9501
+    ports:
+      - "${PHP84_HOST_PORT}:9000"
+      - "${PHP84_HYPERF1_PORT}:9501"
+      - "${PHP84_HYPERF2_PORT}:9502"
+    volumes:
+      - ${SOURCE_DIR}:/www/:rwx
+      - ${PHP84_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
+      - ${PHP84_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
+      - ${PHP84_LOG_DIR}:/var/log/php
+      - ${DATA_DIR}/composer:/tmp/composer
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - default
 
   #  php80:
   #    build:
@@ -439,7 +464,7 @@ services:
     restart: always
 
   postgres:
-    image: postgres:${POSTGRES_VERSION:-15-alpine}
+    image: postgres:${POSTGRES_VERSION:-17.4-alpine}
     container_name: postgres
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
