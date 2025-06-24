@@ -13,14 +13,14 @@ docker全家桶镜像（Docker + Nginx/Openresty + MySQL5,8 + PHP7,8 + Redis + N
 
 1. `100%`开源
 2. `100%`遵循Docker标准
-3. 支持**多版本PHP**共存，可任意切换(PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2)(更新版本PHP会继续添加)
+3. 支持**多版本PHP**共存，可任意切换(PHP7.1、PHP7.2、PHP7.3、PHP7.4、PHP8.0、PHP8.2、PHP8.4)(更新版本PHP会继续添加)
 4. 支持绑定**任意多个域名**
 5. 支持**HTTPS和HTTP/2**
 6. **PHP源代码、MySQL数据、配置文件、日志文件**都可在Host中直接修改查看
 7. 内置**完整PHP扩展安装**命令
 8. 默认支持`pdo_mysql`、`mysqli`、`mbstring`、`gd`、`curl`、`opcache`等常用热门扩展，根据环境灵活配置
 9. 可一键选配常用服务：
-    - 多PHP版本：PHP7.0-7.4、PHP8.0、PHP8.2
+    - 多PHP版本：PHP7.0-7.4、PHP8.0、PHP8.2、PHP8.4
     - Web服务：Nginx、Openresty
     - 数据库：MySQL5、MySQL8、Redis、memcached、MongoDB、ElasticSearch、TDengine、PostgreSQL、InfluxDB、meilisearch
     - 消息队列：RabbitMQ、Kafka
@@ -87,6 +87,7 @@ docker全家桶镜像（Docker + Nginx/Openresty + MySQL5,8 + PHP7,8 + Redis + N
 │   ├── php                     PHP配置目录
 │   ├── php80                   PHP8.0 配置目录
 │   ├── php82                   PHP8.2 配置目录
+│   ├── php84                   PHP8.4 配置目录
 |   ├── ...                     其他配置目录
 │   └── redis                   Redis 配置目录
 │   ├── openresty               openresty 配置目录
